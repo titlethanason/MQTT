@@ -1,5 +1,5 @@
-
-from socket import * 
+import socket
+import traceback
 from threading import Thread
 import os,sys
 
@@ -7,39 +7,37 @@ SERV_PORT = 50000
 
 def handle_client(s):
   while True:
-    try:
-      txtin = s.recv(1024)
-      print ('Client> %s' %(txtin.encode('utf-8')))
-      if txtin == b'quit':
-          print('Client disconnected ...')
-          break
-      else:
-          txtout = txtin.upper()    
-          s.send(txtout)
-    except Exception as e:
-      print(str(e))
+    txtin = s.recv(2048)
+    print ('%s' %(txtin).decode('utf-8')) 
+    if b'> quit' in txtin:
+      print('Client disconnected ...')
       break
+    else:
+      txtout = txtin.upper()    
+      s.send(txtout)
   s.close()
   return
 
 def main():
   addr = ('localhost', SERV_PORT)
-  s = socket(AF_INET, SOCK_STREAM)
+  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   s.bind(addr)
   s.listen(5)
   print ('TCP threaded server started ...')
 
   while True:
     sckt, addr = s.accept()
-    ip, port = str(addr[0]), str(addr[1]) 
-    print ('New client connected from ..' + ip + ':' + port)
-  
+
     try:
+      sender_addr = str(addr[0]) + ':' + str(addr[1]) 
+      print ('New client connected from ' + sender_addr)
       Thread(target=handle_client, args=(sckt,)).start()
     except:
-      print("Cannot start thread..")
-      import traceback
-      trackback.print_exc()
+      try:
+        raise TypeError("Again !?!")
+      except:
+        pass
+      traceback.print_exc()
 
   s.close()
 
