@@ -5,16 +5,16 @@ import os,sys
 
 SERV_PORT = 50000
 
-def handle_client(s):
+def handle_client(s, ip):
   while True:
-    txtin = s.recv(2048)
-    print ('%s' %(txtin).decode('utf-8')) 
-    if b'> quit' in txtin:
-      print('Client disconnected ...')
+    txtin = s.recv(2048).decode('utf-8')
+    print(ip + '> ' + txtin)
+    if txtin == 'quit':
+      print('**ANNOUNCEMENT: ' + ip + ' HAS DISCONNECTED**')
       break
     else:
-      txtout = txtin.upper()    
-      s.send(txtout)
+      txtout = 'Sorry, ' + txtin + ' does not exist'
+      s.sendto(txtout.encode('utf-8'), (ip.split(':')[0], int(ip.split(':')[1])))
   s.close()
   return
 
@@ -29,9 +29,9 @@ def main():
     sckt, addr = s.accept()
 
     try:
-      sender_addr = str(addr[0]) + ':' + str(addr[1]) 
+      sender_addr = str(addr[0]) + ':' + str(addr[1])
       print ('New client connected from ' + sender_addr)
-      Thread(target=handle_client, args=(sckt,)).start()
+      Thread(target=handle_client, args=(sckt,sender_addr,)).start()
     except:
       try:
         raise TypeError("Again !?!")
@@ -50,3 +50,9 @@ if __name__ == '__main__':
        sys.exit(0)
      except SystemExit:
        os._exit(0)
+
+class sub_topic():
+  def __init__(self):
+    self.name : str = None
+    self.subscribers = []
+    self.data = []
