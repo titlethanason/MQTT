@@ -9,7 +9,6 @@ class sub_topic():
   def __init__(self, name):
     self.name = name
     self.subscribers = []
-    self.data = []
     self.child = []
   def addSub(self, path, sckt):
     self.subscribers.append(sckt)
@@ -25,13 +24,17 @@ class sub_topic():
         child.addSub(path[1:], sckt)
         self.child.append(child)
   def sendData(self,path,data):
+    pathExists = False
     if len(path) > 1:
       for x in self.child:
         if x.name == path[1]:
-          x.sendData(path[1:], data)
+          pathExists = x.sendData(path[1:], data)
     else:
-      for x in self.subscribers:
-        x.send(data.encode('utf-8'))
+      if len(self.subscribers) > 0:
+        pathExists = True
+        for x in self.subscribers:
+          x.send(data.encode('utf-8'))
+    return pathExists
   def removeData(self, path, sckt):
     self.subscribers.remove(sckt)
     print('Removed socket in ' + path[0])
@@ -55,7 +58,11 @@ def handle_client(s, ip):
         txtout = 'You have subscribed to ' + topic
         s.send(txtout.encode('utf-8'))
       elif command == 'publish':
-        rootOfTopics.sendData(path,data)
+        foundTopic = rootOfTopics.sendData(path,data)
+        if foundTopic:
+          s.send('Sent data to all subsribers'.encode('utf-8'))
+        else:
+          s.send('Topic does not exist'.encode('utf-8'))
       else:
         txtout = 'Sorry, ' + command + ' does not exist'
         s.send(txtout.encode('utf-8'))
@@ -72,16 +79,9 @@ def main():
 
   while True:
     sckt, addr = s.accept()
-    try:
-      sender_addr = str(addr[0]) + ':' + str(addr[1])
-      print ('New client connected from ' + sender_addr)
-      Thread(target=handle_client, args=(sckt,sender_addr,)).start()
-    except:
-      try:
-        raise TypeError("Again !?!")
-      except:
-        pass
-      traceback.print_exc()
+    sender_addr = str(addr[0]) + ':' + str(addr[1])
+    print ('New client connected from ' + sender_addr)
+    Thread(target=handle_client, args=(sckt,sender_addr,)).start()
 
   s.close()
 
