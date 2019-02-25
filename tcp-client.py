@@ -8,18 +8,18 @@ isConnected = False
 
 while True:
   try:
-    line = input('> ')
+    line = input('COMMAND> ')
     temp = line.split(' ')
     command = temp[0]
     if temp[2][0] is not '/':
       temp[2] = '/' + temp[2]
     if command == 'subscribe' and len(temp) == 3:
       broker_ip = temp[1]
-      sentmsg = temp[0] + '?' + temp[2] + '?'
+      sentmsg = command + '?' + temp[2] + '?'
     elif command == 'publish':
       if len(temp) > 3:
         broker_ip = temp[1]
-        sentmsg = temp[0] + '?' + temp[2] + '?' + ' '.join(temp[3:])
+        sentmsg = command + '?' + temp[2] + '?' + ' '.join(temp[3:])
       else:
         print('No data')
     else:
@@ -36,9 +36,16 @@ while True:
     
     while True:
       modifiedMsg = s.recv(2048)
-      print (modifiedMsg.decode('utf-8'))
+      print ('RESPONSE> ', modifiedMsg.decode('utf-8'))
       if command == 'publish':
         break
+    
+    while True and command == 'publish':
+      data = input('DATA> ')
+      if data == 'quit':
+        break
+      sentmsg = command + '?' + temp[2] + '?' + data
+      s.send(sentmsg.encode('utf-8'))
   except:
-    print('HIHIHIIHIHI timeout')
+    print('Socket timeout')
 s.close()

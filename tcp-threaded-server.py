@@ -46,11 +46,13 @@ class sub_topic():
 rootOfTopics = sub_topic('root')
 
 def handle_client(s, ip):
+  checkPublisher = None
   try:
     while True:
       txtin = s.recv(2048).decode('utf-8')
       print(ip + '> ' + txtin)
       command, topic, data = txtin.split('?')
+      checkPublisher = command
       path = topic.split('/')
       if command == 'subscribe':
         rootOfTopics.addSub(path, s)
@@ -66,8 +68,11 @@ def handle_client(s, ip):
       else:
         txtout = 'Sorry, ' + command + ' does not exist'
         s.send(txtout.encode('utf-8'))
-  except Exception:
-    rootOfTopics.removeData(path, s)
+  except:
+    if checkPublisher != 'publish':
+      rootOfTopics.removeData(path, s)
+    else:
+      print(ip + ' has disconnected from the broker')
   s.close()
 
 def main():
