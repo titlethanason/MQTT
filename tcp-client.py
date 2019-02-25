@@ -9,7 +9,7 @@ temp = line.split(' ')
 command = temp[0]
 if command == 'subscribe' and len(temp) == 3:
   broker_ip = temp[1]
-  sentmsg = temp[0] + '?' + temp[2]
+  sentmsg = temp[0] + '?' + temp[2] + '?'
 elif command == 'publish' and len(temp) == 4:
   broker_ip = temp[1]
   sentmsg = temp[0] + '?' + temp[2] + '?' + temp[3]
