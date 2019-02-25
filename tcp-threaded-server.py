@@ -17,36 +17,37 @@ def handle_client(s, ip):
     txtin = s.recv(2048).decode('utf-8')
     print(ip + '> ' + txtin)
     command, topic, data = txtin.split('?')
-    if command == 'quit':
-      print('**ANNOUNCEMENT: ' + ip + ' HAS DISCONNECTED**')
-      break
-    elif command == 'subscribe':
+    if command == 'subscribe':
       if not listOfTopic:
         temp = sub_topic()
         temp.name = topic
-        temp.subscribers.append(ip)
+        temp.subscribers.append(s)
         listOfTopic.append(temp)
-        print(listOfTopic[0].name, listOfTopic[0].subscribers)
         print('Created ' + topic + ' as a new topic')
       else:
         topicExists = False
         for x in listOfTopic:
           if x.name == topic:
-            x.subscribers.append(ip)
+            x.subscribers.append(s)
             topicExists = True
             break
         if not topicExists:
           temp = sub_topic()
           temp.name = topic
-          temp.subscribers.append(ip)
+          temp.subscribers.append(s)
           listOfTopic.append(temp)
           print('Created ' + topic + ' as a new topic')
-      print(listOfTopic[0].name, listOfTopic[0].subscribers)
       txtout = 'You have subscribed to ' + topic
-      s.sendto(txtout.encode('utf-8'), (ip.split(':')[0], int(ip.split(':')[1])))
+      s.send(txtout.encode('utf-8'))
+    elif command == 'publish':
+      for x in listOfTopic:
+        print(x.subscribers)
+        if x.name == topic:
+          for y in x.subscribers:
+            y.send(data.encode('utf-8'))
     else:
-      txtout = 'Sorry, ' + txtin + ' does not exist'
-      s.sendto(txtout.encode('utf-8'), (ip.split(':')[0], int(ip.split(':')[1])))
+      txtout = 'Sorry, ' + command + ' does not exist'
+      s.send(txtout.encode('utf-8'))
   s.close()
 
 def main():

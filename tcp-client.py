@@ -14,7 +14,7 @@ elif command == 'publish' and len(temp) == 4:
   broker_ip = temp[1]
   sentmsg = temp[0] + '?' + temp[2] + '?' + temp[3]
 else:
-  print('Subscribe to Pewdiepie, dude')
+  print('Command does not exist')
 
 addr = (broker_ip, SERV_PORT)
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
