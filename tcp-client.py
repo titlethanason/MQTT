@@ -4,7 +4,6 @@ import time
 
 MAX_BUF = 2048
 SERV_PORT = 50000
-isConnected = False
 
 while True:
   try:
@@ -25,13 +24,12 @@ while True:
     else:
       print('Command does not exist')
 
-    if not isConnected:
-      addr = (broker_ip, SERV_PORT)
-      s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-      if command == 'publish':
-        s.settimeout(1)
-      s.connect(addr)
-      isConnected = True
+    addr = (broker_ip, SERV_PORT)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    if command == 'publish':
+      s.settimeout(1)
+    s.connect(addr)
+    isConnected = True
     s.send(sentmsg.encode('utf-8'))
     
     while True:
@@ -43,6 +41,7 @@ while True:
     while True and command == 'publish':
       data = input('DATA> ')
       if data == 'quit':
+        s.close()
         break
       sentmsg = command + '?' + temp[2] + '?' + data
       s.send(sentmsg.encode('utf-8'))

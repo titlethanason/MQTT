@@ -50,6 +50,7 @@ def handle_client(s, ip):
   try:
     while True:
       txtin = s.recv(2048).decode('utf-8')
+      print('ERRORRRRRRRRR: \'' + txtin + '\'')
       print(ip + '> ' + txtin)
       command, topic, data = txtin.split('?')
       checkPublisher = command
@@ -68,7 +69,7 @@ def handle_client(s, ip):
       else:
         txtout = 'Sorry, ' + command + ' does not exist'
         s.send(txtout.encode('utf-8'))
-  except:
+  except socket.error:
     if checkPublisher != 'publish':
       rootOfTopics.removeData(path, s)
     else:
@@ -79,7 +80,7 @@ def main():
   addr = ('localhost', SERV_PORT)
   s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   s.bind(addr)
-  s.listen(5)
+  s.listen(10)
   print ('TCP threaded server started...')
 
   while True:
