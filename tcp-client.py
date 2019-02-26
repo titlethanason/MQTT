@@ -10,16 +10,28 @@ while True:
     line = input('COMMAND> ')
     temp = line.split(' ')
     command = temp[0]
-    if command == 'subscribe':
-      while len(temp) < 3:
-        temp.append(input('       > '))
-      data = ''
-    elif command == 'publish':
-      while len(temp) < 4:
-        temp.append(input('       > '))
-      data = ' '.join(temp[3:])
+    correctFormat = False
+    if command == 'subscribe' or command == 'publish':
+      while not correctFormat:
+        if command == 'subscribe' and len(temp) > 2:
+          correctFormat = True
+          data = ''
+        elif command == 'publish' and len(temp) > 3:
+          correctFormat = True
+          data = ' '.join(temp[3:])
+        else:
+          if len(temp) == 1:
+            temp = temp + input('     IP> ').split(' ')
+          elif len(temp) == 2:
+            temp = temp + input('  TOPIC> ').split(' ')
+          elif len(temp) == 3:
+            temp = temp + input('   DATA> ').split(' ')
+      if len(temp) > 3 and command == 'subscribe':
+        print('Oversized length of the subscribe command')
+        raise ValueError
     else:
       print('Command does not exist')
+      raise socket.error
 
     broker_ip = temp[1]
     if temp[2][0] != '/':
@@ -50,6 +62,7 @@ while True:
         s.send(sendmsg.encode('utf-8'))
 
   except socket.error:
-    print('hi')
     s.close()
+  except ValueError:
+    pass
 s.close()
