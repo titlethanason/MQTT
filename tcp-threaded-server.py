@@ -50,7 +50,6 @@ def handle_client(s, ip):
   try:
     while True:
       txtin = s.recv(2048).decode('utf-8')
-      print('ERRORRRRRRRRR: \'' + txtin + '\'')
       print(ip + '> ' + txtin)
       command, topic, data = txtin.split('?')
       checkPublisher = command
@@ -69,11 +68,13 @@ def handle_client(s, ip):
       else:
         txtout = 'Sorry, ' + command + ' does not exist'
         s.send(txtout.encode('utf-8'))
-  except socket.error:
+  except (socket.error, ValueError):
     if checkPublisher != 'publish':
       rootOfTopics.removeData(path, s)
     else:
       print(ip + ' has disconnected from the broker')
+  except:
+    traceback.print_exc()
   s.close()
 
 def main():
@@ -85,9 +86,13 @@ def main():
 
   while True:
     sckt, addr = s.accept()
-    sender_addr = str(addr[0]) + ':' + str(addr[1])
-    print ('New client connected from ' + sender_addr)
-    Thread(target=handle_client, args=(sckt,sender_addr,)).start()
+    try:
+      sender_addr = str(addr[0]) + ':' + str(addr[1])
+      print ('New client connected from ' + sender_addr)
+      Thread(target=handle_client, args=(sckt,sender_addr,)).start()
+    except:
+      print('Could not start a thread..')
+      traceback.print_exc()
 
   s.close()
 
