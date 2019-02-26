@@ -31,7 +31,7 @@ while True:
         raise ValueError
     else:
       print('Command does not exist')
-      raise socket.error
+      raise ValueError
 
     broker_ip = temp[1]
     if temp[2][0] != '/':
