@@ -32,6 +32,8 @@ class sub_topic():
           pathExists = x.sendData(path[1:], data)
         elif path[1] == '#':
           pathExists = x.sendData(path[1:], data)
+        elif path[1] == '+':
+          pathExists = x.sendData(path[1:], data)
     else:
       if len(self.subscribers) > 0:
         pathExists = True
