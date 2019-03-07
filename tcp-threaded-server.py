@@ -11,7 +11,6 @@ class sub_topic():
     self.subscribers = []
     self.child = []
   def addSub(self, path, sckt):
-    self.subscribers.append(sckt)
     childExists = False
     if len(path) > 1:
       for x in self.child:
@@ -23,25 +22,32 @@ class sub_topic():
         child = sub_topic(path[1])
         child.addSub(path[1:], sckt)
         self.child.append(child)
+    else:
+      self.subscribers.append(sckt)
   def sendData(self,path,data):
     pathExists = False
     if len(path) > 1:
       for x in self.child:
         if x.name == path[1]:
           pathExists = x.sendData(path[1:], data)
+        elif path[1] == '#':
+          pathExists = x.sendData(path[1:], data)
     else:
       if len(self.subscribers) > 0:
         pathExists = True
         for x in self.subscribers:
           x.send(data.encode('utf-8'))
+      if path[0] == '#':
+        for x in self.child:
+          pathExists = x.sendData('#', data)
     return pathExists
-  def removeData(self, path, sckt):
-    self.subscribers.remove(sckt)
-    print('Removed socket in ' + path[0])
+  def removeSub(self, path, sckt):
     if len(path) > 1:
       for x in self.child:
         if x.name == path[1]:
-          x.removeData(path[1:], sckt)
+          x.removeSub(path[1:], sckt)
+    else:
+      self.subscribers.remove(sckt)
 
 rootOfTopics = sub_topic('root')
 
@@ -58,19 +64,26 @@ def handle_client(s, ip):
         rootOfTopics.addSub(path, s)
         print('Created ' + topic + ' as a new topic')
         txtout = 'You have subscribed to ' + topic
+        print('Message sent: ' + txtout)
         s.send(txtout.encode('utf-8'))
       elif command == 'publish':
         foundTopic = rootOfTopics.sendData(path,data)
         if foundTopic:
-          s.send('Sent data to all subsribers'.encode('utf-8'))
+          txtout = 'Sent data to all subsribers'
+          print('Message sent: ' + txtout)
+          s.send(txtout.encode('utf-8'))
         else:
-          s.send('Topic does not exist'.encode('utf-8'))
+          txtout = 'Topic does not exist or no subscriber in the topic'
+          print('Message sent: ' + txtout)
+          s.send(txtout.encode('utf-8'))
       else:
         txtout = 'Sorry, ' + command + ' does not exist'
+        print('Message sent: ' + txtout)
         s.send(txtout.encode('utf-8'))
   except (socket.error, ValueError):
     if checkPublisher != 'publish':
-      rootOfTopics.removeData(path, s)
+      rootOfTopics.removeSub(path, s)
+      print(ip + ' has been removed from ' + '/'.join(str(x) for x in path))
     else:
       print(ip + ' has disconnected from the broker')
   except:
@@ -81,7 +94,7 @@ def main():
   addr = ('localhost', SERV_PORT)
   s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   s.bind(addr)
-  s.listen(10)
+  s.listen(5)
   print ('TCP threaded server started...')
 
   while True:
