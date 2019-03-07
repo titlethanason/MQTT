@@ -1,6 +1,5 @@
 import socket
 import sys
-import time
 
 MAX_BUF = 2048
 SERV_PORT = 50000
@@ -40,14 +39,12 @@ while True:
 
     addr = (broker_ip, SERV_PORT)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    if command == 'publish':
-      s.settimeout(1)
     try:
       s.connect(addr)
     except:
       print('Connection error..\nCould not connect to the broker. Please check broker_ip.')
       raise socket.error
-
+    
     s.send(sendmsg.encode('utf-8'))
 
     while True:

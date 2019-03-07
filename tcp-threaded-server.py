@@ -1,6 +1,6 @@
 import socket
 import traceback
-from threading import Thread
+import threading
 import os,sys
 
 SERV_PORT = 50000
@@ -33,7 +33,7 @@ class sub_topic():
         elif path[1] == '#':
           pathExists = x.sendData(path[1:], data)
         elif path[1] == '+':
-          pathExists = x.sendData(path[1:], data)
+          pathExists |= x.sendData(path[1:], data)
     else:
       if len(self.subscribers) > 0:
         pathExists = True
@@ -41,7 +41,7 @@ class sub_topic():
           x.send(data.encode('utf-8'))
       if path[0] == '#':
         for x in self.child:
-          pathExists = x.sendData('#', data)
+          pathExists |= x.sendData('#', data)
     return pathExists
   def removeSub(self, path, sckt):
     if len(path) > 1:
@@ -58,8 +58,8 @@ def handle_client(s, ip):
   try:
     while True:
       txtin = s.recv(2048).decode('utf-8')
-      print(ip + '> ' + txtin)
       command, topic, data = txtin.split('?')
+      print(ip + '> ' + txtin)
       checkPublisher = command
       path = topic.split('/')
       if command == 'subscribe':
@@ -90,21 +90,22 @@ def handle_client(s, ip):
       print(ip + ' has disconnected from the broker')
   except:
     traceback.print_exc()
+  print('Thread:' + str(threading.get_ident()) + ' is closing...')
   s.close()
 
 def main():
   addr = ('localhost', SERV_PORT)
   s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   s.bind(addr)
-  s.listen(5)
-  print ('TCP threaded server started...')
+  s.listen(10)
+  print ('MQTT Broker started...')
 
   while True:
     sckt, addr = s.accept()
     try:
       sender_addr = str(addr[0]) + ':' + str(addr[1])
       print ('New client connected from ' + sender_addr)
-      Thread(target=handle_client, args=(sckt,sender_addr,)).start()
+      threading.Thread(target=handle_client, args=(sckt,sender_addr,)).start()
     except:
       print('Could not start a thread..')
       traceback.print_exc()
