@@ -50,10 +50,10 @@ while True:
     while True:
       modifiedMsg = s.recv(2048)
       print ('RESPONSE> ', modifiedMsg.decode('utf-8'))
-      if 'does not exist' in modifiedMsg.decode('utf-8'):
-        s.close()
-        break
       if command == 'publish':
+        if 'does not exist' in modifiedMsg.decode('utf-8'):
+          s.close()
+          break
         data = input('DATA> ')
         if data == 'quit':
           s.close()
