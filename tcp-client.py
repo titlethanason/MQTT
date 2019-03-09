@@ -1,5 +1,4 @@
 import socket
-import sys
 
 MAX_BUF = 2048
 SERV_PORT = 50000
@@ -65,4 +64,3 @@ while True:
     s.close()
   except ValueError:
     pass
-s.close()

@@ -110,8 +110,6 @@ def main():
       print('Could not start a thread..')
       traceback.print_exc()
 
-  s.close()
-
 if __name__ == '__main__':
   try:
     main()
