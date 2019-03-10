@@ -34,7 +34,7 @@ while True:
     broker_ip = temp[1]
     if temp[2][0] != '/':
       temp[2] = '/' + temp[2]
-    sendmsg = command + '?' + temp[2] + '?' + data
+    sendmsg = command + '~' + temp[2] + '~' + data
 
     addr = (broker_ip, SERV_PORT)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -57,7 +57,7 @@ while True:
         if data == 'quit':
           s.close()
           break
-        sendmsg = command + '?' + temp[2] + '?' + data
+        sendmsg = command + '~' + temp[2] + '~' + data
         s.send(sendmsg.encode('utf-8'))
 
   except socket.error:

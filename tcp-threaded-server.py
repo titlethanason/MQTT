@@ -30,9 +30,7 @@ class sub_topic():
       for x in self.child:
         if x.name == path[1]:
           pathExists = x.sendData(path[1:], data)
-        elif path[1] == '#':
-          pathExists = x.sendData(path[1:], data)
-        elif path[1] == '+':
+        elif path[1] == '#' or path[1] == '+':
           pathExists |= x.sendData(path[1:], data)
     else:
       if len(self.subscribers) > 0:
@@ -58,7 +56,7 @@ def handle_client(s, ip):
   try:
     while True:
       txtin = s.recv(2048).decode('utf-8')
-      command, topic, data = txtin.split('?')
+      command, topic, data = txtin.split('~')
       print(ip + '> ' + txtin)
       checkPublisher = command
       path = topic.split('/')
